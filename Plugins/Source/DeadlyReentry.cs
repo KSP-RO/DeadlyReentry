@@ -165,9 +165,46 @@ namespace DeadlyReentry
 
 		}
 
-		public override void OnStart (StartState state)
-		{
-            counter = 0;
+	private bool GetShieldedStateFromFAR()
+        {
+            // TODO_HoneyFox: would like to integrate FAR here.
+            // This is just some pseudo-codes. Not tested/compiled.
+            
+            // Check if this part is shielded by fairings/cargobays according to FAR's information...
+            PartModule FARPartModule = null;
+            if (part.Modules.Contains("FARBasicDragModel"))
+            {
+                    FARPartModule = part.Modules["FARBasicDragModel"];
+            }
+            else if (part.Modules.Contains("FARWingAerodynamicModel"))
+            {
+                    FARPartModule = part.Modules["FARWingAerodynamicModel"];
+            }
+            else if (part.Modules.Contains("FARPayloadFairingModule"))
+            {
+                    FARPartModule = part.Modules["FARPayloadFairingModule"];
+            }
+            
+            if(FARPartModule != null)
+            {
+                try
+                {
+                    FieldInfo fi = FARPartModule.GetType().GetField("isShielded");
+                    return ((fi.GetValue(FARPartModule)) as Boolean);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log("[DREC]: " + e.Message);
+                    return false;
+                }
+            }
+            else
+                return false;
+        }
+
+	public override void OnStart (StartState state)
+	{
+            	counter = 0;
 			if (state == StartState.Editor)
 				return;
 			SetDamageLabel ();
@@ -207,45 +244,8 @@ namespace DeadlyReentry
                     return false;
             }
             
-            // TODO_HoneyFox: would like to integrate FAR here.
-            // This is just some pseudo-codes. Not tested/compiled.
-            
-            // Check if this part is shielded by fairings/cargobays according to FAR's information...
-            PartModule FARPartModule = null;
-            if (part.Modules.Contains("FARBasicDragModel"))
-            {
-            	FARPartModule = part.Modules["FARBasicDragModel"];
-            }
-            else if (part.Modules.Contains("FARWingAerodynamicModel"))
-            {
-            	FARPartModule = part.Modules["FARWingAerodynamicModel"];
-            }
-            else if (part.Modules.Contains("FARPayloadFairingModule"))
-            {
-            	FARPartModule = part.Modules["FARPayloadFairingModule"];
-            }
-            // Since the FARBaseAerodynamics is an abstract class, shouldn't need to judge this type.
-            /*else if (part.Modules.Contains("FARBaseAerodynamics"))
-            {
-            	FARPartModule = part.Modules["FARBaseAerodynamics"];
-            }*/
-            
-            if(FARPartModule != null)
-            {
-            	try
-            	{
-            		FieldInfo fi = FARPartModule.GetType().GetField("isShielded");
-            		if(((fi.GetValue(FARPartModule)) as Boolean) == true)
-            		{
-         			return true;
-            		}
-            	}
-            	catch (Exception e)
-            	{
-            		Debug.Log("[DREC]: " + e.Message);
-            	}
-            }
-            // End of insertion.
+            if (GetShieldedStateFromFAR() == true)
+            	return true;
             
             Ray ray = new Ray(part.transform.position + direction.normalized * adjustCollider, direction.normalized);
 			RaycastHit[] hits = Physics.RaycastAll (ray, 10);
