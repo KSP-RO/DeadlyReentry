@@ -206,6 +206,39 @@ namespace DeadlyReentry
                 if ((mainDeployState + secDeployState).Contains("DEPLOYED")) // LOW, PRE, or just DEPLOYED
                     return false;
             }
+            
+            // TODO_HoneyFox: would like to integrate FAR here.
+            // This is just some pseudo-codes. Not tested/compiled.
+            
+            // Check if this part is shielded by fairings/cargobays according to FAR's information...
+            PartModule FARPartModule = null;
+            if (part.Modules.Contains("FARBasicDragModel"))
+            {
+            	FARPartModule = part.Modules["FARBasicDragModel"];
+            }
+            else if (part.Modules.Contains("FARWingAerodynamicModel"))
+            {
+            	FARPartModule = part.Modules["FARWingAerodynamicModel"];
+            }
+            else if (part.Modules.Contains("FARPayloadFairingModule"))
+            {
+            	FARPartModule = part.Modules["FARPayloadFairingModule"];
+            }
+            else if (part.Modules.Contains("FARBaseAerodynamics"))
+            {
+            	FARPartModule = part.Modules["FARBaseAerodynamics"];
+            }
+            
+            if(FARPartModule != null)
+            {
+            	FieldInfo fi = FARPartModule.GetType().GetField("isShielded");
+            	if(((fi.GetValue(FARPartModule)) as Boolean) == true)
+            	{
+         		return true;
+            	}
+            }
+            // End of insertion.
+            
             Ray ray = new Ray(part.transform.position + direction.normalized * adjustCollider, direction.normalized);
 			RaycastHit[] hits = Physics.RaycastAll (ray, 10);
 			foreach (RaycastHit hit in hits) {
