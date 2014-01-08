@@ -224,17 +224,25 @@ namespace DeadlyReentry
             {
             	FARPartModule = part.Modules["FARPayloadFairingModule"];
             }
-            else if (part.Modules.Contains("FARBaseAerodynamics"))
+            // Since the FARBaseAerodynamics is an abstract class, shouldn't need to judge this type.
+            /*else if (part.Modules.Contains("FARBaseAerodynamics"))
             {
             	FARPartModule = part.Modules["FARBaseAerodynamics"];
-            }
+            }*/
             
             if(FARPartModule != null)
             {
-            	FieldInfo fi = FARPartModule.GetType().GetField("isShielded");
-            	if(((fi.GetValue(FARPartModule)) as Boolean) == true)
+            	try
             	{
-         		return true;
+            		FieldInfo fi = FARPartModule.GetType().GetField("isShielded");
+            		if(((fi.GetValue(FARPartModule)) as Boolean) == true)
+            		{
+         			return true;
+            		}
+            	}
+            	catch (Exception e)
+            	{
+            		Debug.Log("[DREC]: " + e.Message);
             	}
             }
             // End of insertion.
