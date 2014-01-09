@@ -37,12 +37,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\KSP_0.20\KSP.app\Contents\Data\Managed\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\..\Kerbal Space Program v0.23\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\KSP_0.20\KSP.app\Contents\Data\Managed\UnityEngine.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\..\Kerbal Space Program v0.23\KSP_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -50,7 +48,8 @@
     <PostBuildEvent>rd /s /q Source\bin
 rd /s /q Source\obj
 del *.pdb
-del "System.Core.dll"</PostBuildEvent>
+del "System.Core.dll"
+copy /y $(TargetFileName) "E:\Kerbal Space Program v0.23\GameData\DeadlyReentry\Plugins\"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

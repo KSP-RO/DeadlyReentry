@@ -165,7 +165,7 @@ namespace DeadlyReentry
 
 		}
 
-	private bool GetShieldedStateFromFAR()
+		private bool GetShieldedStateFromFAR()
         {
             // TODO_HoneyFox: would like to integrate FAR here.
             // This is just some pseudo-codes. Not tested/compiled.
@@ -184,23 +184,29 @@ namespace DeadlyReentry
             {
                     FARPartModule = part.Modules["FARPayloadFairingModule"];
             }
-            
-            if(FARPartModule != null)
-            {
-                try
-                {
-                    FieldInfo fi = FARPartModule.GetType().GetField("isShielded");
-                    return ((fi.GetValue(FARPartModule)) as Boolean);
-                }
-                catch (Exception e)
-                {
-                    Debug.Log("[DREC]: " + e.Message);
-                    return false;
-                }
-            }
-            else
-                return false;
-        }
+
+			if (FARPartModule != null)
+			{
+				//Debug.Log("[DREC] Part has FAR module.");
+				try
+				{
+					FieldInfo fi = FARPartModule.GetType().GetField("isShielded");
+					bool isShieldedFromFAR = ((bool)(fi.GetValue(FARPartModule)));
+					//Debug.Log("[DREC] Found FAR isShielded: " + isShieldedFromFAR.ToString());
+					return isShieldedFromFAR;
+				}
+				catch (Exception e)
+				{
+					Debug.Log("[DREC]: " + e.Message);
+					return false;
+				}
+			}
+			else
+			{
+				//Debug.Log("[DREC] No FAR module.");
+				return false;
+			}
+		}
 
 	public override void OnStart (StartState state)
 	{
