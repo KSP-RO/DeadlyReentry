@@ -167,9 +167,6 @@ namespace DeadlyReentry
 
 		private bool GetShieldedStateFromFAR()
         {
-            // TODO_HoneyFox: would like to integrate FAR here.
-            // This is just some pseudo-codes. Not tested/compiled.
-            
             // Check if this part is shielded by fairings/cargobays according to FAR's information...
             PartModule FARPartModule = null;
             if (part.Modules.Contains("FARBasicDragModel"))
