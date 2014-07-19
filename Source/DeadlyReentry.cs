@@ -240,20 +240,7 @@ namespace DeadlyReentry
 		}
 
 		public bool IsShielded(Vector3 direction)
-		{
-			if ((object)parachute != null) {
-				ModuleParachute p = parachute;
-				if(p.deploymentState == ModuleParachute.deploymentStates.DEPLOYED || p.deploymentState == ModuleParachute.deploymentStates.SEMIDEPLOYED)
-					return false;
-			}
-            if ((object)realChute != null)
-            {
-                string mainDeployState = (string)rCType.GetField("depState").GetValue(realChute);
-                string secDeployState = (string)rCType.GetField("secDepState").GetValue(realChute);
-                if ((mainDeployState + secDeployState).Contains("DEPLOYED")) // LOW, PRE, or just DEPLOYED
-                    return false;
-            }
-            
+		{   
             if (GetShieldedStateFromFAR() == true)
             	return true;
             
@@ -292,6 +279,19 @@ namespace DeadlyReentry
             }
             else
             {
+                // deal with parachutes here
+                if ((object)parachute != null)
+                {
+                    ModuleParachute p = parachute;
+                    if ((p.deploymentState == ModuleParachute.deploymentStates.DEPLOYED || p.deploymentState == ModuleParachute.deploymentStates.SEMIDEPLOYED) && adjTemp > part.maxTemp)
+                        p.CutParachute();
+                }
+                if ((object)realChute != null)
+                {
+                   if (!(bool)rCType.GetProperty("anyDeployed").GetValue(realChute, null) && 
+                                        Math.Pow(vessel.atmDensity, ReentryPhysics.densityExponent) * shockwave > part.maxTemp)
+                       rCType.GetMethod("GUICut").Invoke(realChute, null);
+                }
                 if (IsShielded(velocity))
                     displayShockwave = "Shielded";
                 else
@@ -757,6 +757,7 @@ namespace DeadlyReentry
 
 		public void Start()
 		{
+            enabled = true; // 0.24 compatibility
 			foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes ("REENTRY_EFFECTS")) {
                 if(node.HasValue("shockwaveExponent"))
                     float.TryParse(node.GetValue("shockwaveExponent"), out shockwaveExponent);
