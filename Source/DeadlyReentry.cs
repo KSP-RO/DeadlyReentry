@@ -279,6 +279,8 @@ namespace DeadlyReentry
             }
             else
             {
+                float adjTemp = AdjustedHeat(velocity, shockwave,
+                                        ReentryPhysics.TemperatureDelta(vessel.atmDensity, shockwave, part.temperature));
                 // deal with parachutes here
                 if ((object)parachute != null)
                 {
@@ -288,8 +290,7 @@ namespace DeadlyReentry
                 }
                 if ((object)realChute != null)
                 {
-                   if (!(bool)rCType.GetProperty("anyDeployed").GetValue(realChute, null) && 
-                                        Math.Pow(vessel.atmDensity, ReentryPhysics.densityExponent) * shockwave > part.maxTemp)
+                   if (!(bool)rCType.GetProperty("anyDeployed").GetValue(realChute, null) && adjTemp > part.maxTemp)
                        rCType.GetMethod("GUICut").Invoke(realChute, null);
                 }
                 if (IsShielded(velocity))
@@ -298,8 +299,7 @@ namespace DeadlyReentry
                 {
                     if (is_debugging)
                         displayShockwave = shockwave.ToString("F0") + "C";
-                    return AdjustedHeat(velocity, shockwave,
-                                        ReentryPhysics.TemperatureDelta(vessel.atmDensity, shockwave, part.temperature));
+                    return adjTump;
                 }
             }
             return 0;
