@@ -23,6 +23,35 @@ Hold down ALT+D+R to enable debugging. This lets you change settings in-game, an
 
 ==========
 Changelog:
+v7.2.0
+* Deadly Reentry no longer implements reentry heating. Instead it tweaks parameters to make stock reentry deadlier.
+* Deadly Reentry still handles G-force damage.
+* Still no menu. (sorry! Cute cat still there!)
+* Configs for all parts previously handled by Deadly Reentry have been edited to take advantage of new stock skin system.
+* Spaceplane handling is a bit experimental and relies on having a skin with VERY low thermal mass which increases the heat loss from radiation. 
+  (use VERY shallow reentries for spaceplanes and reentries will be survivable but difficult. Consider turning off the heat gauges or you will get a frightful scare when you do spaceplane reentries)
+* (no, seriously, turn the heat gauges off...)
+* skinMaxTemp tends to be higher than maxTemp which now represents internal temp, including resource temp.
+* ModularFlightIntegrator is still a dependency but is not currently used by Deadly Reentry.
+
+v7.1.0
+* Added heat shield char support. (not all shields)
+* Major changes to skin conduction, radiation and convection
+* Skin percentage is now actually a percentage of thermal mass. (i.e. part thermal mass goes down as skin thermal mass goes up)
+* Heat shield aerodynamics fixed. (stable when blunt end forwards for all DRE shields & ADEPT shields)
+* Heat shield decoupler: texts fixed. Unused decouplers removed. 0.625m decoupler added.
+* NaN checking
+* MOAR NaN checking
+* Moved away from foreach usage. (you shouldn't use foreach, m'kay? foreach is bad.... m'kay?)
+* Delete audio on destroy
+* reimplemented engine detection
+* RO support
+* Depleted shields burn easier
+* 1kg minimum part mass enforced. (in calculations only; part mass is not touched)
+* Fixed 3.75m shield normal map
+* Patching of KSO parts to remove obsolete pre DRE 7 configs.
+
+
 v7.0.3
 * Calculate what pecentage of skin is actually facing the shockwave and use only that percent for thermalMass
 * Add OnDestroy() and null the FlightIntegrator cache
