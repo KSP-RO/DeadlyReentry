@@ -5,9 +5,6 @@ License remains CC-BY-SA as modified by ialdabaoth.
 Also included: Module Manager (by sarbian, swamp_ig, and ialdabaoth). See Module Manager thread for details and license and source: http://http://forum.kerbalspaceprogram.com/threads/55219
 Module Manager is required for DREC to work.
 
-Note: Does not support any KSP 64 bit versions past, present or future.
-
-
 Deadly Reentry 7.0 for KSP 1.0.*
 A note on settings:
 Coming Soon
@@ -19,10 +16,222 @@ INSTALL INSTRUCTIONS:
 USAGE INSTRUCTIONS:
 Be careful how you reenter. Make sure your craft has a heatshield (the Mk1 pod has a built-in heatshield, as do stock spaceplanes; the Mk1-2 needs a heat shield from the Structural tab). For a low Kerbin orbit reentry, try for a periapsis of about 20km.
 
-Hold down ALT+D+R to enable debugging. This lets you change settings in-game, and shows additional information when you right-click parts. After making any changes, hit save to write to custom.cfg. Hold ALT+D+R to make the window go away and disable debugging.
-
+To change DRE settings, click the DRE menu button (looks like a capsule reentering)
+DRE menu icon created by lajoswinkler
 ==========
 Changelog:
+v7.8.0
+* Refactoring of code
+* Removed Monobehaviour calls from any constructors or code which would result in Monobehaviour being called from a constructor
+* Moved temperature rebalancing to after a game save has been loaded (once only)
+* The previous two items addresses KSP hanging at main menu. It cannot be guaranteed to correct such behaviour as I don't believe any one mod is responsible and in fact the more mods you have the more likely it is to happen. This only minimizes DREs contribution to the problem.
+* Added DRE PAW grouping. (DRE fields are grouped and can be collapsed in the PAW)
+
+v7.7.4
+* Compile of The Maat Edition for KSP 1.8.x
+* Functionally identical to 7.7.3.1.
+* Players should not try to use this with versions of KSP older than 1.8.0
+
+v7.7.3.1
+* Recompile for KSP 1.7.x
+* Released as The Maat Edition in honor of my cat Maat (named for the Egyptian goddess of balance and justice)
+
+v7.7.3
+* Fixed versioning
+* Forced ModuleAeroReentry to Awake when added at runtime.
+* Added DR reentry heat override in DR menu (up to 200% by default. Can be patched to support any arbitrary integer. 1 = 100%, 2 = 200%, 3 = 300% etc etc)
+* WARNING: If the stock reentry slider is used to scale heat it will revert to the stock cap of 150%. I can't actually override the stock slider which is why I added one to the Deadly Reentry menu.
+// example scale patch:
+{
+    maxHeatScale = 3 // this caps the reentry heat scale override menu slider at %300
+}
+
+v7.7.2
+* Updated for KSP 1.6
+* Fix for OPT config
+* Support for future compatibility with all EVA Kerbals. (as long as the Kerbal has ModuleKerbalEVA then it is supported)
+
+v7.7.1
+* Compiled for KSP 1.5.1
+* Compatibility restrictions removed. DR will no longer disable itself if invalid version detected. This does NOT guarantee compatibility. DR will try to work with invalid versions but you will still be warned of compatibility issues so you are warned.
+* Changed how depleted conductivity is handled. Uses prefab.heatConductivity when ablator depleted.
+* Making History configs added for Mk2Pod and round pods.
+* Support added for new part config of old Mk1Pod. (Mk1Pod_v2)
+* Updated KerbalEVA config to catch any PART with MODULE KerbalEVA (new kerbal PART's were added so I changed how this was being detected to guard against future additions)
+
+v7.7.0
+* Compatibility release for KSP 1.4.*
+* Other configuration tweaks
+
+v7.6.2
+* Recompiled for KSP 1.3.1
+* Adjusted heat shield lossConst and pyrolysisLossFactor for improved survivability.
+
+v7.6.1
+* Recompiled for KSP 1.3.0
+* Rescaled tempRatio for inner kerbal temps. Lower limit = 317K and upper = 322 (scalding) - Clamped to 0-1 for sound volume. Unclamped for fear reaction animation
+* Fixed Kerbals not spawning with correct inner temp.
+* Fixed Kerbals not healing at *fixedDeltaTime
+* Updated files for main DeadlyReentry.cfg,
+* Scaled up star systems support. 
+* (may not be adequate for all custom star systems. This is REALLY something that should be handled by those star system mods)
+* Updated RealChute settings
+* Moved inflatable configs into their own file
+* Fixed 15m HIAD mass (what, like YOU were never off by three orders of magnitude???)
+* Updated categories
+* Disable overheating destruction. (Parts still burn up due to stock heating)
+* skinMaxTemp wasn't being handled during temperature rebalancing.
+* NaN detection changed to use Double.isNaN instead of comparing to Double.NaN
+
+v7.6.0
+* Finalized implementation of Max Operational Temp system
+* Implemented 'damage cubes' similar to drag cubes except that hull damage is now directional.
+* If vehicle skin takes enough damage facing its velocity vector then hot reentry gasses can enter the ship and damage internals directly
+* Internal damage handled separately and is not directionally based.
+* Kerbal max temp rebalance finalized. Suits (skin) can withstand up to ~900 K but the Kerbal inside starts taking damage at 317 K
+* EVA Kerbals now have a small amount of cooling. (500 watts but subject to rebalancing)
+* Kerbals scream when on fire.
+* Reinstituted menu setting for turning off crew g-force warning message.
+* Fixed problem with calling part.Modules[*] (replaced with FindModuleImplementing)
+
+v7.5.0
+* KSP compatibility 1.2.2 Update.
+* Commented out StrutConnector fixes. (StrutConnector changes? Have to monitor strut situation and see if original problem still exists)
+* Fixes to RSSROConfig handling
+* Added ModuleTransform2Value (works like ModuleAnimation2Value except that the value depends on the state (active/inactive) of a designated mesh object) (all chutes use this now both stock and RC)
+* Added framework configuring max/operation temp values inModuleAeroReentry
+
+v7.4.7.1
+* Removed ablator from PF fairings. (addresses negative cost issue)
+
+v7.4.7
+Compiled for KSP 1.1.3
+Updated versioning information
+
+v7.4.5.1
+* Don't delete leaveTemp. (causes errors in latest versions of Module Manager)
+* Changes to vernier thermals. (increased survivability of the Vernor RCS part)
+
+v7.4.5
+* Fix flag exploding when switching to flag. (prevent flag from having
+ModuleAeroReentry added to it)
+* Add additional debug logging to FixMaxTemps(). Status of parts that
+are skipped due to leaveTemp = true are logged. Parts that are adjusted
+are logged.
+* Adjusting RSS fallback config. (used when Real Solar System is
+installed but Realism Overhaul is not and RSSROConfig is not set.
+* Possible fix for explosion/burning sounds being too loud for distant
+objects.
+* Added additional case handling for #leaveTemp.
+* Removed toolbar from Main Menu
+
+v7.4.4
+* Adjusting RSS fallback config. (used when Real Solar System is installed but Realism Overhaul is not and RSSROConfig is not set.
+* Possible fix for explosion/burning sounds being too loud for distant objects.
+
+v7.4.3
+* Reworked previous fix for KIS/KAS. (catch KerbalEVA and prevent damage code from running on it during part initialization)
+* Updated ModuleManager for KSP 1.1.2
+* Recompiled for KSP 1.1.2
+* Updated versioning information
+* Extended compatibility checking to more code sections.
+
+v7.4.2
+* Fixed DefaultSettings.cfg (crew G limits and crew G Min were accidentally reverted to older bad values)
+* Adjusted crew G limits (metric is 20g starts to be dangerous after 10 sec. 6g after 77sec)
+
+v7.4.1
+* Disabled some damage system code if part is KerbalEVA. (esp in OnStart())
+* Inflatable heat shield rebalancing: Reduced mass to 1 ton. Reduced thermal mass modifier to to 1. Increased skin thermal mass modifier to 1.41. Adjusted absorptiveConstant. Adjusted conductive factors.
+
+v7.4.0
+* Updated and compiled for KSP 1.1
+
+v7.3.2
+* Reimplemented menu. (reverted previous changes to get it functional
+again. Old menu duplication bug probably reverted as well)
+* Fixed issue with settings changes not applied.
+* Menu automatically writes changes to custom.cfg
+* Moved g force settings out of ModuleAeroReentry to ReentryPhysics
+* Added leaveTemp to spaceplane parts ModuleAeroReentry
+* Tweaked Space Plane part configs
+* Added missing gToleranceMult to default settings. (part G tolerance)
+* Updated versioning info
+* Removed deprecated config settings from code
+* Reworked DRE Scenario Module
+
+v7.3.1
+* Added skill check for damage above 0.75 (requires skill level 5)
+* No fire damage if CheatOptions.IgnoreMaxTemperature == true
+* No G-Force damage if CheatOptions.UnbreakableJoints == true
+* Only run toolbar code once. (addresses duplicates created when database reloaded)
+* Tweaked Mk1 Pod thermals (max temp, heat shield) to address complaints that pod is burning up too easily.
+* Updated RSS fallback heat shield configs
+
+v7.3.0
+* KSP 1.0.5 compatibility update
+* Code cleanup of extraneous DRE 7.1.0 skin remnants.
+* Fire damage reinstated
+* Repairing of damage now requires an engineer on EVA - the  more badly damaged the part, the greater the skill required.
+* Damaged parts have lowered tolerance to further overheating and may break loose easier. (skinMaxTemp, breakingForce and breakingTorque are all reduced)
+* Part configuration patches tweaked.
+* It's still the Melificent Edition.
+* Almost reinstated DRE specific menu options.
+
+v7.2.2
+* Adjusted all DRE shield part cost and mass. (adjusted cost to account
+for resource  problem described in issue #24 and adjusted heat shield
+masses to saner values)
+* Adjusted cost in Procedural Fairings to account for resource problem
+described in issue #24. (both stock fairing and PF mod)
+* screen message formatting
+* Corrected flux formatting for displays.
+* Approximating total absorbed heat in joules. (displayed in part
+context menu for total convective heat when over Mach 1)
+* Removed settings for chute warning messages since DRE no longer
+implements chute failures.
+* Version revision restriction. From this point on, revision restriction
+	in effect. DRE will not run on anything older than 1.0.4 and will also
+	fail on future updates until an updated version is released.
+* RSS specific tweaks. (modify lossConst / pyrolysisLossFactor to allow shields to survive reentry)
+* globally changed reentryConductivity to 0.001 (insulation allows 1 W / kW)
+* Implemented depletion threshold for maxTemps/conductivity changes. 
+* increased depletedConductivity to 20 from 1. 
+  (insulation burns up and becomes useless. Fiery plasma sweeps through your craft incinerating all in its path. Hilarity ensues)
+* Space is a tough place where wimps eat flaming plasma death.
+
+v7.2.1
+* Removed Modular Flight Integrator dependency
+
+v7.2.0
+* Deadly Reentry no longer implements reentry heating. Instead it tweaks parameters to make stock reentry deadlier.
+* Deadly Reentry still handles G-force damage.
+* Still no menu. (sorry! Cute cat still there!)
+* Configs for all parts previously handled by Deadly Reentry have been edited to take advantage of new stock skin system.
+* Spaceplane handling is a bit experimental and relies on having a skin with VERY low thermal mass which increases the heat loss from radiation. 
+  (use VERY shallow reentries for spaceplanes and reentries will be survivable but difficult. Consider turning off the heat gauges or you will get a frightful scare when you do spaceplane reentries)
+* (no, seriously, turn the heat gauges off...)
+* skinMaxTemp tends to be higher than maxTemp which now represents internal temp, including resource temp.
+* ModularFlightIntegrator is still a dependency but is not currently used by Deadly Reentry.
+
+v7.1.0
+* Added heat shield char support. (not all shields)
+* Major changes to skin conduction, radiation and convection
+* Skin percentage is now actually a percentage of thermal mass. (i.e. part thermal mass goes down as skin thermal mass goes up)
+* Heat shield aerodynamics fixed. (stable when blunt end forwards for all DRE shields & ADEPT shields)
+* Heat shield decoupler: texts fixed. Unused decouplers removed. 0.625m decoupler added.
+* NaN checking
+* MOAR NaN checking
+* Moved away from foreach usage. (you shouldn't use foreach, m'kay? foreach is bad.... m'kay?)
+* Delete audio on destroy
+* reimplemented engine detection
+* RO support
+* Depleted shields burn easier
+* 1kg minimum part mass enforced. (in calculations only; part mass is not touched)
+* Fixed 3.75m shield normal map
+* Patching of KSO parts to remove obsolete pre DRE 7 configs.
+
+
 v7.0.3
 * Calculate what pecentage of skin is actually facing the shockwave and use only that percent for thermalMass
 * Add OnDestroy() and null the FlightIntegrator cache
@@ -194,33 +403,27 @@ v1 === \/
 *added gToleranceMult to tweak the g limits of parts. Works as a global scalar. Currently set to 2.5
 
 DOCUMENTATION ON THE HEAT SHIELD MODULE
-First documented confignode code, then notes.
+As of KSP 1.0, Deadly Reentry no longer implements its own heat shield. Use the same config as for the stock ModuleAblator. The following two fields are also allowed in ModuleHeatShield:
+
+depletedMaxTemp // when shield ablator is depleted it's maximum allowed temperature is reduced to this value
+depletedConductivity // When shield ablator is depleted, the shield will conduct heat at this value. (higher)
+
 MODULE
 {
 	name = ModuleHeatShield
-	direction = 0, -1, 0 // a vector pointing in the direction of the shielding.
-	// That means "towards the back of the stack". If you want a spaceplane part to be
-	//  shielded "down-forwards", use something like 0, 0.7, -0.7
-	// which is, for spaceplanes, halfway between the "forwards" (+Y) axis and the "down" (-Z) axis
-	
-	// the direction establishes an angle at which the shield applies. If the velocity vector strays
-	// too far from this direction, the below advantages will not apply.
-	reflective = 0.05 // 5% of heat is ignored at correct angle
-	
-	// now comes the parameters for if the shield is ablative.
-	ablative = AblativeShielding // what resource to use up when ablating.
-	loss
-	{ // Set the loss rates at various *shockwave* temperatures. The actual loss rate will also be modified by atmospheric density at the time.
-		key = 650 0 0 0 // start ablating at 650 degrees C
-		key = 1000 64 0 0 // peak ablation at 1000 degrees C
-		key = 3000 80 0 0 // max ablation at 3000 degrees C
-	}
-	dissipation
-	{ // Sets the dissipation at various *part* temperatures. The actual dissipation will be the loss of shielding during that tick times this rate.
-			key = 300 0 0 0 // begin ablating at 300 degrees C
-			key = 500 180 0 0 // maximum dissipation at 500 degrees C
-	}
+	ablativeResource = AblativeShielding
+	lossExp = -7500
+	lossConst = 1
+	pyrolysisLossFactor = 6000
+	reentryConductivity = 0.001
+	ablationTempThresh = 500
+	depletedMaxTemp = 1200
+	depletedConductivity = 20
+	charMin = 1
+	charMax = 1
 }
+
+
 // Then add a resource node.
 RESOURCE
 {
@@ -228,24 +431,4 @@ RESOURCE
 	amount = 250
 	maxAmount = 250
 }
-NOTES:
-Note that KSP (and Deadly Reentry) model temperature, not heat. For this reason, a 5m heat shield will change temperature just as much as a 1m heat shield. For this reason, you need to set your loss and dissipation rates with the shield's maximum amount of ablative shielding in mind. Basically, you want loss * dissipation to equal the shield's effectiveness (so if you want two shields to have the same heat dissipation per second, even if they have different amounts of AblativeShielding, make sure those products are equal). Larger shields should have larger amounts of shielding, proportionally larger loss rates, and proportionally *lower* dissipation rates.
 
-Finally, for use in RSS you'll want to increase the loss node's maximum reentry shockwave temperature and set the dissipation much higher. Something like:
-MODULE[ModuleHeatShield]
-{ 
-	direction = 0, -1, 0 // bottom of pod
-	reflective = 0.05 // 5% of heat is ignored at correct angle
-	ablative = AblativeShielding
-	loss
-	{ // loss is based on the shockwave temperature (also based on density)
-		key = 650 0 0 0 // start ablating at 650 degrees C
-		key = 2000 160 0 0 // peak ablation at 2000 degrees C
-		key = 5000 200 0 0 // max ablation at 5000 degrees C
-	}
-	dissipation
-	{ // dissipation is based on the part's current temperature
-			key = 300 0 0 0 // begin ablating at 300 degrees C
-			key = 800 480 0 0 // maximum dissipation at 800 degrees C
-	}
-}

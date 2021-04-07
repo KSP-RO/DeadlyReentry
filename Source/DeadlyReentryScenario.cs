@@ -13,44 +13,37 @@ namespace DeadlyReentry
 		{
 		}
 		
-		public static DeadlyReentryScenario Instance;
-		public bool displayParachuteWarning = true;
-        public bool displayCrewGForceWarning = true;
+        public static bool displayCrewGForceWarning = true;
+        public static float DREReentryHeatScale = 1;
 		
-		private int difficultySetting = 1;
+		private static int difficultySetting = 1;
 		
-		public int DifficultySetting
+        public static int DifficultySetting
 		{
 			get
 			{
-				return this.difficultySetting;
+				return difficultySetting;
 			}
 			set
 			{
-                if (this.difficultySetting != value)
+                if (difficultySetting != value)
                 {
-     				this.difficultySetting = value;
+     				difficultySetting = value;
                     //DeadlyReentry.ReentryPhysics.LoadSettings();
                 }
 			}
 		}
 
-        private static string[] difficultyName = {"Easy", "Default", "Hard", "Alternate.Model", "RSS"};
+        private static string[] difficultyName = {"Easy", "Default", "Hard"};
 
-        public string DifficultyName
+        public static string DifficultyName
         {
             get
             {
-                return difficultyName[this.difficultySetting];
+                return difficultyName[difficultySetting];
             }
         }
 		
-		public override void OnAwake ()
-		{
-			DeadlyReentryScenario.Instance = this;
-            this.difficultySetting = 1;
-		}
-
         //public override void OnStart()
         //{
         //    ReentryPhysics.LoadSettings();
@@ -58,19 +51,24 @@ namespace DeadlyReentry
 		
 		public override void OnSave(ConfigNode node)
 		{
-            return;
 			node.AddValue ("difficultySetting", difficultySetting);
-			node.AddValue ("displayParachuteWarning", displayParachuteWarning);
+            node.AddValue ("displayCrewGForceWarning", displayCrewGForceWarning, " Should we display warning about unsafe crew G-Forces.");
+            node.AddValue("DREReentryHeatScale", DREReentryHeatScale, " Overrides stock ReentryHeatScale.");
 		}
 		
 		public override void OnLoad(ConfigNode node)
 		{
-            return;
 			if (node.HasValue ("difficultySetting"))
 				difficultySetting = int.Parse (node.GetValue ("difficultySetting"));
-
-			if (node.HasValue("displayParachuteWarning"))
-				bool.TryParse(node.GetValue("displayParachuteWarning"), out displayParachuteWarning);
+            if (node.HasValue("displayCrewGForceWarning"))
+                displayCrewGForceWarning = bool.Parse(node.GetValue("displayCrewGForceWarning"));
+            if (node.HasValue("DREReentryHeatScale"))
+                DREReentryHeatScale = float.Parse(node.GetValue("DREReentryHeatScale"));
+            HighLogic.CurrentGame.Parameters.Difficulty.ReentryHeatScale = DREReentryHeatScale;
 		}
+        static void print(string msg)
+        {
+            MonoBehaviour.print("[DeadlyReentry.DeadlyReentryScenario] " + msg);
+        }
 	}
 }
