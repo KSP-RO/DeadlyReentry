@@ -1,12 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
 using System.Diagnostics;
 using UnityEngine;
-using UnityEngine.UI;
-using KSP.UI;
 using KSP.UI.Screens;
 using KSP.Localization;
 
@@ -31,7 +26,6 @@ namespace DeadlyReentry
         private string DREVersionString = "";
         private static Vector3 mousePos = Vector3.zero;
         private bool weLockedInputs = false;
-        private GUIStyle _buttonStyle = null;
         #endregion
 
         #region Properties

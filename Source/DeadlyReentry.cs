@@ -6,8 +6,6 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using KSP;
-//using KSP.IO;
-//using ModularFI;
 
 namespace DeadlyReentry
 {

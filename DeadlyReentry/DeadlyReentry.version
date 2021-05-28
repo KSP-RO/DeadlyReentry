@@ -1,10 +1,10 @@
 {
     "NAME":"Deadly Reentry",
-    "URL":"https://raw.githubusercontent.com/Starwaster/DeadlyReentry/master/DeadlyReentry/DeadlyReentry.version",
-    "DOWNLOAD":"https://github.com/Starwaster/DeadlyReentry/releases",
+    "URL":"https://raw.githubusercontent.com/KSP-RO/DeadlyReentry/master/DeadlyReentry/DeadlyReentry.version",
+    "DOWNLOAD":"https://github.com/KSP-RO/DeadlyReentry/releases",
     "GITHUB":
     {
-        "USERNAME":"Starwaster",
+        "USERNAME":"KSP-RO",
         "REPOSITORY":"DeadlyReentry",
         "ALLOW_PRE_RELEASE":false,
     },
@@ -12,7 +12,7 @@
 	{
 	    "MAJOR" : 7,
 	    "MINOR" : 8,
-	    "PATCH" : 1
+	    "PATCH" : 2
 	},
 	
 	"KSP_VERSION":
