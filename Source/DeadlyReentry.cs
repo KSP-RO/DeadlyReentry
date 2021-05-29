@@ -31,6 +31,8 @@ namespace DeadlyReentry
         [KSPField(isPersistant = false, guiActive = false, guiName = "Cumulative G", guiUnits = "", guiFormat = "F0", groupDisplayName = "Deadly Reentry Debug", groupName = "DeadlyReentryDebug")]
         public double gExperienced = 0;
 
+        protected bool useLowerOperationalTemp = true;
+
         protected FlightIntegrator flightIntegrator;
 
         /*
@@ -285,14 +287,9 @@ namespace DeadlyReentry
             damageCube = new DamageCube();
 
             // are we an engine?
-            for (int i = part.Modules.Count - 1; i >= 0; --i)
-            {
-                if (part.FindModuleImplementing<ModuleEngines>() != null)
-                {
-                    is_engine = true;
-                    break;
-                }
-            }
+            is_engine = part.FindModuleImplementing<ModuleEngines>() != null;
+
+            useLowerOperationalTemp = part.FindModuleImplementing<ModuleAblator>() == null;
         }
 
         void OnDestroy()
@@ -340,9 +337,9 @@ namespace DeadlyReentry
 
             // sanity check for parts whose max temps might change
             if (part.maxTemp < maxOperationalTemp)
-                maxOperationalTemp = part.maxTemp * 0.85;
+                maxOperationalTemp = useLowerOperationalTemp ? part.maxTemp * 0.85 : part.maxTemp;
             if (part.skinMaxTemp < skinMaxOperationalTemp)
-                skinMaxOperationalTemp = part.skinMaxTemp * 0.85;
+                skinMaxOperationalTemp = useLowerOperationalTemp ? part.skinMaxTemp * 0.85 : part.skinMaxTemp;
 
             // sanity checking
             if (Double.IsNaN(part.temperature))
@@ -585,14 +582,6 @@ namespace DeadlyReentry
                     if (dead)
                         return;
 
-                    //if (is_engine && damage < 1)
-                    //    skinMaxOperationalTemp = part.skinMaxTemp * 0.975;
-                    //else if (vessel.isEVA)
-                    //{
-                    //    skinMaxOperationalTemp = 800 * (1 - damage) * (1 - damage);
-                    //    part.skinMaxTemp = 900;
-                    //}
-
                     if (part.temperature > maxOperationalTemp)
                     {
                         // for scream / fear reaction ratio, use scalding water as upper value
@@ -725,9 +714,9 @@ namespace DeadlyReentry
         public override void OnStart(PartModule.StartState state)
         {
             if (maxOperationalTemp < 0d || maxOperationalTemp > part.maxTemp)
-                maxOperationalTemp = part.maxTemp * (is_engine ? 0.975 : 0.85);
+                maxOperationalTemp = useLowerOperationalTemp ? part.maxTemp * (is_engine ? 0.975 : 0.85) : part.maxTemp;
             if (skinMaxOperationalTemp < 0d || skinMaxOperationalTemp > part.skinMaxTemp)
-                skinMaxOperationalTemp = part.skinMaxTemp * (is_engine ? 0.975 : 0.85);
+                skinMaxOperationalTemp = useLowerOperationalTemp ? part.skinMaxTemp * (is_engine ? 0.975 : 0.85) : part.skinMaxTemp;
 
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
