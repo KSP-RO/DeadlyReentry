@@ -31,28 +31,11 @@ namespace DeadlyReentry
         [KSPField(isPersistant = false, guiActive = false, guiName = "Cumulative G", guiUnits = "", guiFormat = "F0", groupDisplayName = "Deadly Reentry Debug", groupName = "DeadlyReentryDebug")]
         public double gExperienced = 0;
 
-        protected bool useLowerOperationalTemp = true;
+        [KSPField]
+        public bool useLowerOperationalTemp = true;
 
         protected FlightIntegrator flightIntegrator;
 
-        /*
-        private ModularFlightIntegrator fi;
-        public ModularFlightIntegrator FI
-        {
-            get
-            {
-                if ((object)fi == null)
-                    fi = vessel.gameObject.GetComponent<ModularFlightIntegrator>();
-                return fi;
-            }
-            set
-            {
-                fi = value;
-            }
-        }
-        
-        public ModularFlightIntegrator.PartThermalData ptd;
-        */
         private double lastGForce = 0;
         protected double lastTemperature;
 
@@ -289,7 +272,7 @@ namespace DeadlyReentry
             // are we an engine?
             is_engine = part.FindModuleImplementing<ModuleEngines>() != null;
 
-            useLowerOperationalTemp = part.FindModuleImplementing<ModuleAblator>() == null;
+            useLowerOperationalTemp &= part.FindModuleImplementing<ModuleAblator>() == null;
         }
 
         void OnDestroy()
@@ -304,21 +287,17 @@ namespace DeadlyReentry
         public override void OnLoad(ConfigNode node)
         {
             base.OnLoad(node);
-            /*
-            if (node.HasValue("maxOperationalTemp") && double.TryParse(node.GetValue("maxOperationalTemp"), out maxOperationalTemp))
-            {
-                Debug.Log("part " + part.name + ".maxOperationalTemp = " + maxOperationalTemp.ToString());
-            }
-            if (node.HasValue("skinMaxOperationalTemp") && double.TryParse(node.GetValue("skinMaxOperationalTemp"), out skinMaxOperationalTemp))
-            {
-                Debug.Log("part " + part.name + ".skinMaxOperationalTemp = " + skinMaxOperationalTemp.ToString());
-            }
-            */
 
             if (node.HasValue("damageCube"))
             {
                 this.damageCube.LoadFromString(node.GetValue("damageCube"));
             }
+        }
+
+        protected double OperationalTempOffset(double temp)
+        {
+            double offsetMaxTemp = Math.Max(0d, temp - 400d);
+            return Math.Max(10d, Math.Min(400d, offsetMaxTemp * (is_engine ? 0.025 : 0.15)));
         }
 
         public override void OnSave(ConfigNode node)
@@ -337,9 +316,9 @@ namespace DeadlyReentry
 
             // sanity check for parts whose max temps might change
             if (part.maxTemp < maxOperationalTemp)
-                maxOperationalTemp = useLowerOperationalTemp ? part.maxTemp * 0.85 : part.maxTemp;
+                maxOperationalTemp = useLowerOperationalTemp ? part.maxTemp - OperationalTempOffset(part.maxTemp) : part.maxTemp;
             if (part.skinMaxTemp < skinMaxOperationalTemp)
-                skinMaxOperationalTemp = useLowerOperationalTemp ? part.skinMaxTemp * 0.85 : part.skinMaxTemp;
+                skinMaxOperationalTemp = useLowerOperationalTemp ? part.skinMaxTemp - OperationalTempOffset(part.skinMaxTemp) : part.skinMaxTemp;
 
             // sanity checking
             if (Double.IsNaN(part.temperature))
@@ -714,9 +693,9 @@ namespace DeadlyReentry
         public override void OnStart(PartModule.StartState state)
         {
             if (maxOperationalTemp < 0d || maxOperationalTemp > part.maxTemp)
-                maxOperationalTemp = useLowerOperationalTemp ? part.maxTemp * (is_engine ? 0.975 : 0.85) : part.maxTemp;
+                maxOperationalTemp = useLowerOperationalTemp ? part.maxTemp - OperationalTempOffset(part.maxTemp) : part.maxTemp;
             if (skinMaxOperationalTemp < 0d || skinMaxOperationalTemp > part.skinMaxTemp)
-                skinMaxOperationalTemp = useLowerOperationalTemp ? part.skinMaxTemp * (is_engine ? 0.975 : 0.85) : part.skinMaxTemp;
+                skinMaxOperationalTemp = useLowerOperationalTemp ? part.skinMaxTemp - OperationalTempOffset(part.skinMaxTemp) : part.skinMaxTemp;
 
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
