@@ -1,25 +1,30 @@
-This update is by Starwaster
-ialdabaoth (who is awesome) created Deadly Reentry 2, based on r4m0n's Deadly Reentry; this is a continuation. This continues NathanKell's work on Deadly Reentry continued, and he might contribute more at times.
+This update is by the KSP-RO team.
+ialdabaoth (who is awesome) created Deadly Reentry 2, based on r4m0n's Deadly Reentry; this is a continuation. This continues Starwaster's continuation of NathanKell's work on Deadly Reentry continued.
 
 License remains CC-BY-SA as modified by ialdabaoth.
 Also included: Module Manager (by sarbian, swamp_ig, and ialdabaoth). See Module Manager thread for details and license and source: http://http://forum.kerbalspaceprogram.com/threads/55219
 Module Manager is required for DREC to work.
 
-Deadly Reentry 7.0 for KSP 1.0.*
-A note on settings:
-Coming Soon
+Deadly Reentry 8.0 for KSP 1.10+
 
 INSTALL INSTRUCTIONS:
 1. If you currently have Deadly Reentry installed, go to KSP/GameData/DeadlyReentry and delete everything (files and folders) except custom.cfg. Also delete any old versions of ModuleManager (modulemanager.dll for example) in your KSP/GameData folder.
 2. Extract this archive to your KSP/GameData folder.
 
 USAGE INSTRUCTIONS:
-Be careful how you reenter. Make sure your craft has a heatshield (the Mk1 pod has a built-in heatshield, as do stock spaceplanes; the Mk1-2 needs a heat shield from the Structural tab). For a low Kerbin orbit reentry, try for a periapsis of about 20km.
+Be careful how you reenter. Make sure your craft has a heatshield (the Mk1 pod has a built-in heatshield, as do stock spaceplanes; the Mk1-2 needs a heat shield from the Thermal tab). For a low Kerbin orbit reentry, try for a periapsis of about 20km.
 
 To change DRE settings, click the DRE menu button (looks like a capsule reentering)
 DRE menu icon created by lajoswinkler
 ==========
 Changelog:
+v8.0.0
+* Recompile and version bump for KSP 1.10+
+* Changes to the operational-temp mechanic. Now it is much more generous for very low-temperature parts and very high-temperature parts. Solves issues where low-temp wings burn up too easily (or spaceplane performance changes drastically between DRE and non-DRE installs).
+* Heatshields do not use the operational temp system.
+* Get rid of FINAL patches for parachutes, now other mods can still interact with DRE's changes.
+
+* Lots more code cleanup.
 v7.8.0
 * Refactoring of code
 * Removed Monobehaviour calls from any constructors or code which would result in Monobehaviour being called from a constructor
