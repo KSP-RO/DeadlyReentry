@@ -969,12 +969,13 @@ namespace DeadlyReentry
                 return;
             
             base.Start();
-            if((object)ablativeResource != null && ablativeResource != "")
+            if (!string.IsNullOrEmpty(ablativeResource))
             {
-                if(part.Resources.Contains(ablativeResource))
+                if (part.Resources.Contains(ablativeResource))
                 {
                     _ablative = part.Resources[ablativeResource];
-                } else
+                }
+                else
                     print("ablative lookup failed!");
             }
             else
@@ -994,9 +995,6 @@ namespace DeadlyReentry
             {
                 part.skinMaxTemp = Math.Min(part.skinMaxTemp, depletedMaxTemp);
                 part.heatConductivity = part.partInfo.partPrefab.heatConductivity;
-                // TODO Think about removing the next two lines; skin-skin and skin-internal depend on heatConductivity so this could be overkill
-                //part.skinSkinConductionMult = Math.Min(part.skinSkinConductionMult, depletedConductivity);
-                //part.skinInternalConductionMult = Math.Min(part.skinInternalConductionMult, depletedConductivity);
             }
         }
     }
