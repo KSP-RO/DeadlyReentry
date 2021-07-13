@@ -128,8 +128,6 @@ namespace DeadlyReentry
             }
         }
 
-        EventData<GameEvents.ExplosionReaction> ReentryReaction = GameEvents.onPartExplode;
-        
         UIPartActionWindow _myWindow = null; 
         UIPartActionWindow myWindow 
         {
@@ -437,14 +435,7 @@ namespace DeadlyReentry
                 if ((damageCube.averageDamage >= 1.0f || internalDamage >= 1f) && !dead)
                 {
                     dead = true;
-                    FlightLogger.fetch.LogEvent("[" + FormatTime(vessel.missionTime) + "] "
-                                              + part.partInfo.title + " exceeded g-force tolerance.");
-                    // TODO See if we still need this or similar code. Rewrite if needed. Remove if obsolete.
-                    //if ( part is StrutConnector )
-                    //{
-                    //    ((StrutConnector)part).BreakJoint();
-                    //}
-                    
+                    GameEvents.onOverG.Fire(new EventReport(FlightEvents.OVERG, part, part.partInfo.title, "", 0, part.vessel.geeForce.ToString("F0") + " / " + part.gTolerance.ToString("F0") + " G", part.explosionPotential));
                     part.explode();
                     return;
                 }
@@ -573,7 +564,8 @@ namespace DeadlyReentry
 
                         if (vessel.isEVA && tempRatio >= 0.089 && nextScream <= DateTime.Now)
                         {
-                            ReentryReaction.Fire(new GameEvents.ExplosionReaction(0, tempRatio));
+                            // Only FlightCameraFX and the Kerbals listen to this, so it's probably safe
+                            GameEvents.onPartExplode.Fire(new GameEvents.ExplosionReaction(0, tempRatio));
                             PlaySound(screamFX, tempRatio);
                             nextScream = DateTime.Now.AddSeconds(15);
                         }
@@ -608,15 +600,8 @@ namespace DeadlyReentry
                             if (false && !dead)
                             {
                                 dead = true;
-                                FlightLogger.fetch.LogEvent("[" + FormatTime(vessel.missionTime) + "] "
-                                    + part.partInfo.title + " burned up from overheating.");
-                                
-                                // TODO See if we still need this or similar code. Rewrite if needed. Remove if obsolete.
-                                //if ( part is StrutConnector )
-                                //{
-                                //    ((StrutConnector)part).BreakJoint();
-                                //}
-                                
+                                GameEvents.onOverheat.Fire(new EventReport(FlightEvents.OVERHEAT, part, part.partInfo.title, "", 0, "skin took too much damage from overheating", part.explosionPotential));
+
                                 part.explode();
                                 return;
                             }
@@ -642,7 +627,8 @@ namespace DeadlyReentry
                                 fx.gameObject.transform.Rotate(90, 0, 0);
                             }
                             float distance = Vector3.Distance(this.part.partTransform.position, FlightGlobals.ActiveVessel.vesselTransform.position);
-                            ReentryReaction.Fire(new GameEvents.ExplosionReaction(distance, tempRatio));
+                            // Only FlightCameraFX and the Kerbals listen to this, so it's probably safe
+                            GameEvents.onPartExplode.Fire(new GameEvents.ExplosionReaction(distance, tempRatio));
                         }
                     }
                     else if (is_on_fire)
