@@ -9,12 +9,9 @@ using KSP;
 
 namespace DeadlyReentry
 {
-    [KSPAddon(KSPAddon.Startup.SpaceCentre, true)]
+    [KSPAddon(KSPAddon.Startup.MainMenu, true)]
     public class FixMaxTemps : MonoBehaviour
     {
-        //public PartModule RFEngineConfig = null;
-        //public FieldInfo[] RFEConfigs = null;
-        
         public void Start()
         {
             Debug.Log("FixMaxTemps: Fixing Temps");
@@ -44,7 +41,7 @@ namespace DeadlyReentry
                                 AvailablePart part = PartLoader.LoadedPartsList[i];
                                 try
                                 {
-                                    if ((object)part.partPrefab != null && !(part.partPrefab.FindModuleImplementing<ModuleHeatShield>() || part.partPrefab.FindModuleImplementing<ModuleAblator>()))
+                                    if ((object)part.partPrefab != null && !part.partPrefab.FindModuleImplementing<ModuleAblator>())
                                     {
                                         ModuleAeroReentry _ModuleAeroReentry = part.partPrefab.FindModuleImplementing<ModuleAeroReentry>();
                                         if (_ModuleAeroReentry != null)
@@ -99,7 +96,7 @@ namespace DeadlyReentry
                                 }
                                 try
                                 {
-                                    if ((object)part.partPrefab != null && (object)part.partPrefab.Modules != null)
+                                    if ((object)part.partPrefab != null && (object)part.partPrefab.Modules != null && part.name != "flag")
                                     {
                                         bool add = true;
                                         for (int k = 0; k < part.partPrefab.Modules.Count; k++)
@@ -108,13 +105,7 @@ namespace DeadlyReentry
                                             {
                                                 Debug.Log(part.name + " already has ModuleAeroReentry. Not adding.");
                                                 add = false;
-                                                continue;
-                                            }
-                                            if (part.name == "flag")
-                                            {
-                                                Debug.Log("Not adding ModuleAeroReentry to part 'flag'");
-                                                add = false;
-                                                continue;
+                                                break;
                                             }
                                         }
                                         if (add)
