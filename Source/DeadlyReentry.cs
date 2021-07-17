@@ -52,7 +52,7 @@ namespace DeadlyReentry
         private bool is_gforce_fx_playing = false;
 
         private bool is_engine = false;
-        private DateTime nextScream = DateTime.Now;
+        private double nextScreamUT = -1d;
 
         protected double recordedHeatLoad = 0.0;
         protected double maximumRecordedHeat = 0.0;
@@ -413,7 +413,7 @@ namespace DeadlyReentry
                 if (dead || vessel == null || TimeWarp.fixedDeltaTime > 0.5 || TimeWarp.fixedDeltaTime <= 0)
                     return; // don't check G-forces in warp
                 
-                double geeForce = vessel.geeForce_immediate;
+                double geeForce = vessel.geeForce;
                 if (geeForce > 40 && geeForce > lastGForce)
                 {
                     // G forces over 40 are probably a Kraken twitch unless they last multiple frames
@@ -430,12 +430,7 @@ namespace DeadlyReentry
                 //double gTolerance;
                 if (gTolerance < 0)
                 {
-                    if (is_engine && damageCube.averageDamage < 1)
-                        gTolerance = (float)Math.Pow(UnityEngine.Random.Range(11.9f, 12.1f) * part.crashTolerance, 0.5);
-                    else
-                        gTolerance = (float)Math.Pow(UnityEngine.Random.Range(5.9f, 6.1f) * part.crashTolerance, 0.5);
-                    
-                    gTolerance *= ReentryPhysics.gToleranceMult;
+                    gTolerance = (float)part.gTolerance / 6.0f * ReentryPhysics.gToleranceMult * 0.85f * UnityEngine.Random.Range(0.95f, 1.05f);
                 }
                 if (gTolerance >= 0 && displayGForce > gTolerance)
                 { // G tolerance is based roughly on crashTolerance
@@ -498,7 +493,7 @@ namespace DeadlyReentry
                         }
                     }
                 }
-                lastGForce = vessel.geeForce_immediate;
+                lastGForce = geeForce;
             }
         }
         
@@ -575,23 +570,25 @@ namespace DeadlyReentry
                 {
                     if (dead)
                         return;
+                    
+                    double UT = Planetarium.GetUniversalTime();
 
                     if (part.temperature > maxOperationalTemp)
                     {
                         // for scream / fear reaction ratio, use scalding water as upper value
-                        float tempRatio = (float)RangePercent(maxOperationalTemp, 322.15, part.temperature);
+                        float tempRatio = (float)RangePercent(maxOperationalTemp, part.maxTemp, part.temperature);
 
                         if (part.mass > 1)
                             tempRatio /= part.mass;
                         
                         AddInternalDamage(TimeWarp.fixedDeltaTime * tempRatio);
 
-                        if (vessel.isEVA && tempRatio >= 0.089 && nextScream <= DateTime.Now)
+                        if (vessel.isEVA && tempRatio >= 0.089 && nextScreamUT <= UT && screamFX != null)
                         {
                             // Only FlightCameraFX and the Kerbals listen to this, so it's probably safe
                             GameEvents.onPartExplode.Fire(new GameEvents.ExplosionReaction(0, tempRatio));
                             PlaySound(screamFX, tempRatio);
-                            nextScream = DateTime.Now.AddSeconds(15);
+                            nextScreamUT = UT + 15d;
                         }
                     }
 
@@ -605,23 +602,16 @@ namespace DeadlyReentry
                         float soundTempRatio = (float)(tempRatio);
                         PlaySound(ablationFX, soundTempRatio);
 
-                        if (vessel.isEVA)
+                        if (vessel.isEVA && nextScreamUT <= UT)
+                        {
                             PlaySound(screamFX, 1f);
+                            nextScreamUT = UT + 15d;
+                        }
 
                         if (damageCube.averageDamage >= 1.0f)
                         { // has it burnt up completely?
 
-                            List<ParticleSystem> fxs = ablationFX.fxEmittersNewSystem;
-                            for (int i = fxs.Count - 1; i >= 0; --i)
-                                GameObject.Destroy(fxs[i].gameObject);
-                            fxs = ablationSmokeFX.fxEmittersNewSystem;
-                            for (int i = fxs.Count - 1; i >= 0; --i)
-                                GameObject.Destroy(fxs[i].gameObject);
-                            fxs = screamFX.fxEmittersNewSystem;
-                            for (int i = fxs.Count - 1; i >= 0; --i)
-                                GameObject.Destroy(fxs[i].gameObject);
-                            
-                            if (false && !dead)
+                            if (!dead)
                             {
                                 dead = true;
                                 GameEvents.onOverheat.Fire(new EventReport(FlightEvents.OVERHEAT, part, part.partInfo.title, "", 0, "skin took too much damage from overheating", part.explosionPotential));
@@ -633,8 +623,8 @@ namespace DeadlyReentry
                         else
                         {
                             is_on_fire = true;
-                            List<ParticleSystem> fxs = ablationFX.fxEmittersNewSystem;
                             ParticleSystem fx;
+                            List<ParticleSystem> fxs = ablationFX.fxEmittersNewSystem;
                             for (int i = fxs.Count - 1; i >= 0; --i)
                             {
                                 fx = fxs[i];
