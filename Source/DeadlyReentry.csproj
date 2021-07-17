@@ -35,6 +35,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Checkers.cs" />
+    <Compile Include="ReentryPhysics.cs" />
+    <Compile Include="FixMaxTemp.cs" />
     <Compile Include="DeadlyReentry.cs">
       <SubType>Code</SubType>
     </Compile>
