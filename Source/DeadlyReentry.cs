@@ -837,14 +837,8 @@ namespace DeadlyReentry
         [KSPField(isPersistant = true)]
         public bool needsSuitTempInit = true;
 
-        [KSPField(isPersistant = true)]
-        private string EVATestProperty = "default value";
-
         public override void OnStart(PartModule.StartState state)
         {
-            GameEvents.onCrewOnEva.Add(OnCrewOnEva);
-            GameEvents.onVesselGoOffRails.Add(OnVesselGoOffRails);
-
             base.OnStart(state);
 
             if (this.needsSuitTempInit)
@@ -854,16 +848,6 @@ namespace DeadlyReentry
             }
             //this.part.gaugeThresholdMult = this.gaugeThresholdMult;
             //this.part.edgeHighlightThresholdMult = this.edgeHighlightThresholdMult;
-            Debug.Log("[ModuleKerbalAeroReentry.OnStart()] EVATestProperty = " + EVATestProperty);
-        }
-
-        public void OnVesselGoOffRails(Vessel v)
-        {
-            if ((object)v != null)
-            {
-                //this.part.gaugeThresholdMult = this.gaugeThresholdMult;
-                //this.part.edgeHighlightThresholdMult = this.edgeHighlightThresholdMult;
-            }
         }
 
         public override void FixedUpdate()
@@ -892,20 +876,7 @@ namespace DeadlyReentry
             }
             else
                 Fields["injury"].guiActive = false;
-
-            if (EVATestProperty != "default value")
-            {
-                Debug.Log("EVATestProperty = " + EVATestProperty);
-                EVATestProperty = "default value";
-            }
         }
-
-        // setting values in this event is pointless as they are reset to their default values in OnStart()
-        public void OnCrewOnEva(GameEvents.FromToAction<Part, Part> eventData)
-        {
-            this.EVATestProperty = "value changed";
-            Debug.Log("[ModuleKerbalAeroReentry.OnCrewOnEva()] EVATestProperty = " + EVATestProperty);
-    }
 
         #region IAnalyticTemperatureModifier
         // Analytic Interface - only purpose is to pin Kerbal internal to a reasonable value
