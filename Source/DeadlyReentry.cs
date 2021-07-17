@@ -81,7 +81,7 @@ namespace DeadlyReentry
             displayMaximumRecordedHeat = "0 W";
             recordedHeatLoad = 0f;
             maximumRecordedHeat = 0f;
-            if ((object)myWindow != null)
+            if (myWindow != null)
                 myWindow.displayDirty = true;
         }
 
@@ -94,7 +94,7 @@ namespace DeadlyReentry
 
             ProcessDamage();
             SetDamageLabel();
-            if ((object)myWindow != null)
+            if (myWindow != null)
                 myWindow.displayDirty = true;
         }
 
@@ -133,7 +133,7 @@ namespace DeadlyReentry
         {
             get
             {
-                if((object)_myWindow == null)
+                if(_myWindow == null)
                 {
                     UIPartActionWindow[] windows = FindObjectsOfType<UIPartActionWindow>();
                     for(int i = windows.Length - 1; i >= 0; --i)
@@ -195,7 +195,7 @@ namespace DeadlyReentry
         {
             get
             {
-                if((object)_gForceFX == null)
+                if(_gForceFX == null)
                 {
                     _gForceFX = new FXGroup (part.name + "_Crushing");
                     _gForceFX.audio = gameObject.AddComponent<AudioSource>();
@@ -214,7 +214,7 @@ namespace DeadlyReentry
         {
             get
             {
-                if((object)_ablationSmokeFX == null)
+                if(_ablationSmokeFX == null)
                 {
                     _ablationSmokeFX = new FXGroup (part.name + "_Smoking");
                     _ablationSmokeFX.fxEmittersNewSystem.Add (Emitter("fx_smokeTrail_medium").GetComponent<ParticleSystem>());
@@ -228,7 +228,7 @@ namespace DeadlyReentry
         {
             get
             {
-                if((object)_ablationFX == null)
+                if(_ablationFX == null)
                 {
                     _ablationFX = new FXGroup (part.name + "_Burning");
                     _ablationFX.fxEmittersNewSystem.Add (Emitter("fx_exhaustFlame_yellow").GetComponent<ParticleSystem>());
@@ -249,7 +249,7 @@ namespace DeadlyReentry
         {
             get
             {
-                if ((object)_screamFX == null)
+                if (_screamFX == null)
                 {
                     _screamFX = new FXGroup(part.name + "_Screaming");
                     _screamFX.audio = gameObject.AddComponent<AudioSource>();
@@ -275,11 +275,35 @@ namespace DeadlyReentry
 
         void OnDestroy()
         {
-            //FI = null;
-            if((object)_ablationFX != null && (object)_ablationFX.audio != null)
-                Destroy(_ablationFX.audio);
-            if((object)_gForceFX != null && (object)_gForceFX.audio != null)
-                Destroy(_gForceFX.audio);
+            if (_ablationFX != null)
+            {
+                if(_ablationFX.audio != null)
+                GameObject.Destroy(_ablationFX.audio);
+                foreach (var ps in _ablationFX.fxEmittersNewSystem)
+                    if (ps.gameObject != null)
+                        GameObject.Destroy(ps.gameObject);
+            }
+            if(_ablationSmokeFX != null)
+            {
+                if (_ablationSmokeFX.audio != null)
+                    GameObject.Destroy(_ablationSmokeFX.audio);
+                foreach (var ps in _ablationSmokeFX.fxEmittersNewSystem)
+                    if (ps.gameObject != null)
+                        GameObject.Destroy(ps.gameObject);
+            }
+            if (_gForceFX != null)
+            {
+                if (_gForceFX.audio != null)
+                    GameObject.Destroy(_gForceFX.audio);
+                foreach (var ps in _gForceFX.fxEmittersNewSystem)
+                    if (ps.gameObject != null)
+                        GameObject.Destroy(ps.gameObject);
+            }
+            if (_screamFX != null)
+            {
+                if (_screamFX.audio != null)
+                    GameObject.Destroy(_screamFX.audio);
+            }
         }
 
         public override void OnLoad(ConfigNode node)
@@ -349,7 +373,7 @@ namespace DeadlyReentry
 
                 double aeroThermalFlux = 0;
 
-                if ((object)flightIntegrator != null)
+                if (flightIntegrator != null)
                 {
                     aeroThermalFlux = (Math.Pow(this.flightIntegrator.backgroundRadiationTempExposed, 4) * PhysicsGlobals.StefanBoltzmanConstant * PhysicsGlobals.RadiationFactor);
                 }
@@ -375,7 +399,7 @@ namespace DeadlyReentry
                 Fields["displayDamage"].guiActive = PhysicsGlobals.ThermalDataDisplay;
                 Fields["displayExposedAreas"].guiActive = PhysicsGlobals.ThermalDataDisplay;
 
-                if ((object)myWindow != null)
+                if (myWindow != null)
                 {
                     myWindow.displayDirty = true;
                 }
@@ -386,7 +410,7 @@ namespace DeadlyReentry
         {
             if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ready && !CheatOptions.UnbreakableJoints)
             {
-                if (dead || (object)vessel == null || TimeWarp.fixedDeltaTime > 0.5 || TimeWarp.fixedDeltaTime <= 0)
+                if (dead || vessel == null || TimeWarp.fixedDeltaTime > 0.5 || TimeWarp.fixedDeltaTime <= 0)
                     return; // don't check G-forces in warp
                 
                 double geeForce = vessel.geeForce_immediate;
@@ -480,7 +504,7 @@ namespace DeadlyReentry
         
         public void AddDamage(float dmg, Vector3 dir)
         {
-            if (dead || (object)part == null || (object)part.partInfo == null || (object)part.partInfo.partPrefab == null)
+            if (dead || part == null || part.partInfo == null || part.partInfo.partPrefab == null)
                 return;
             //if(is_debugging)
             //    print (part.partInfo.title + ": +" + dmg + " damage");
@@ -515,7 +539,7 @@ namespace DeadlyReentry
         {
             if(!vessel.isEVA)
             {
-                if((object)Events == null)
+                if(Events == null)
                     return;
 
                 float maxDamage = Mathf.Max(internalDamage, damageCube.maxDamage);
