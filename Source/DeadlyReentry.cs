@@ -11,16 +11,16 @@ namespace DeadlyReentry
 {
     class ModuleAeroReentry : PartModule
     {
+        protected static ScreenMessage crewGWarningMsg = new ScreenMessage("<color=#ff0000>Reaching Crew G limit!</color>", 1f, ScreenMessageStyle.UPPER_CENTER);
+        
         [KSPField]
         public bool leaveTemp = false;
 
-        [KSPField(isPersistant = false, guiActive = true, guiName = "maxOperationalTemp", guiUnits = " K", guiFormat = "F2", groupDisplayName = "Deadly Reentry Debug", groupName = "DeadlyReentryDebug")]
+        [KSPField(isPersistant = false, guiActive = false, guiName = "Max Operational Temp", guiUnits = " K", guiFormat = "F2", groupDisplayName = "Deadly Reentry Debug", groupName = "DeadlyReentryDebug")]
         public double maxOperationalTemp = -1d;
 
-        [KSPField(isPersistant = false, guiActive = true, guiName = "skinMaxOperationalTemp", guiUnits = " K", guiFormat = "F2", groupDisplayName = "Deadly Reentry Debug", groupName = "DeadlyReentryDebug")]
+        [KSPField(isPersistant = false, guiActive = false, guiName = "Max Operational Skin Temp", guiUnits = " K", guiFormat = "F2", groupDisplayName = "Deadly Reentry Debug", groupName = "DeadlyReentryDebug")]
         public double skinMaxOperationalTemp = -1d;
-
-        public bool is_debugging;
 
         [KSPField(isPersistant = false, guiActive = false, guiName = "Acceleration", guiUnits = " G", guiFormat = "F3", groupDisplayName = "Deadly Reentry Debug", groupName = "DeadlyReentryDebug")]
         public double displayGForce;
@@ -34,8 +34,6 @@ namespace DeadlyReentry
         [KSPField]
         public bool useLowerOperationalTemp = true;
 
-        protected FlightIntegrator flightIntegrator;
-
         private double lastGForce = 0;
         protected double lastTemperature;
 
@@ -45,45 +43,18 @@ namespace DeadlyReentry
         [KSPField]
         public float gTolerance = -1;
 
-        [KSPField(isPersistant = true)]
-        public float crashTolerance = 8;
-
         private bool is_on_fire = false;
         private bool is_gforce_fx_playing = false;
 
         private bool is_engine = false;
         private double nextScreamUT = -1d;
 
-        protected double recordedHeatLoad = 0.0;
-        protected double maximumRecordedHeat = 0.0;
-        protected double heatFluxPerArea = 0.0;
         protected DamageCube damageCube;
 
         [KSPField(isPersistant = true)]
         protected float internalDamage;
 
-        [KSPField(isPersistant = false, guiActive = false, guiName = "Rec. Heat", guiUnits = "", guiFormat = "F4", groupDisplayName = "Deadly Reentry Debug", groupName = "DeadlyReentryDebug")]
-        protected string displayRecordedHeatLoad = "0 W";
-
-        [KSPField(isPersistant = false, guiActive = false, guiName = "Max. Rec. Heat", guiUnits = "", guiFormat = "F4", groupDisplayName = "Deadly Reentry Debug", groupName = "DeadlyReentryDebug")]
-        protected string displayMaximumRecordedHeat = "0 W";
-
-        [KSPField(isPersistant = false, guiActive = false, guiName = "Heat/cm2", guiUnits = "", guiFormat = "F4", groupDisplayName = "Deadly Reentry Debug", groupName = "DeadlyReentryDebug")]
-        protected string displayHeatFluxPerArea = "0 W/cm2";
-
-        [KSPField(isPersistant = false, guiActive = false, guiName = "Exposed Area", guiUnits = "", guiFormat = "F2", groupDisplayName = "Deadly Reentry Debug", groupName = "DeadlyReentryDebug")]
-        protected string displayExposedAreas = "0";
-
-        [KSPEvent(guiName = "Reset Heat Record", guiActiveUnfocused = true, externalToEVAOnly = false, guiActive = false, unfocusedRange = 4f, groupDisplayName = "Deadly Reentry Debug", groupName = "DeadlyReentryDebug")]
-        public void ResetRecordedHeat()
-        {
-            displayRecordedHeatLoad = "0 W";
-            displayMaximumRecordedHeat = "0 W";
-            recordedHeatLoad = 0f;
-            maximumRecordedHeat = 0f;
-            if (myWindow != null)
-                myWindow.displayDirty = true;
-        }
+        protected bool is_debugging = false;
 
         [KSPEvent(guiName = "No Damage", guiActiveUnfocused = true, externalToEVAOnly = false, guiActive = false, unfocusedRange = 4f)]
         public void RepairDamage()
@@ -149,33 +120,6 @@ namespace DeadlyReentry
             }
         }
         
-        static string FormatTime(double time)
-        {
-            int iTime = (int) time % 3600;
-            int seconds = iTime % 60;
-            int minutes = (iTime / 60) % 60;
-            int hours = (iTime / 3600);
-            return hours.ToString ("D2") 
-                + ":" + minutes.ToString ("D2") + ":" + seconds.ToString ("D2");
-        }
-
-        static string FormatFlux(double flux, bool scale = false)
-        {
-            if (scale)
-                flux *= TimeWarp.fixedDeltaTime;
-            if (flux >= 1000000000.0)
-                return (flux / 1000000000.0).ToString("F2") + " T";
-            else if (flux >= 1000000.0)
-                return (flux / 1000000.0).ToString("F2") + " G";
-            else if (flux >= 1000.0)
-                return (flux / 1000.0).ToString("F2") + " M";
-            else if (flux >= 1.0)
-                return (flux).ToString("F2") + " k";
-            else
-                return (flux * 1000.0).ToString("F2");
-            
-        }
-
         public static void PlaySound(FXGroup fx, float volume)
         {
             volume = Mathf.Clamp01(volume);
@@ -187,8 +131,6 @@ namespace DeadlyReentry
                 fx.audio.volume = volume;
                 fx.audio.Play ();
             }
-            //if(this.is_debugging)
-            //    print (fx.audio.clip.name);
         }
         FXGroup _gForceFX = null;
         FXGroup gForceFX 
@@ -318,8 +260,9 @@ namespace DeadlyReentry
 
         protected double OperationalTempOffset(double temp)
         {
-            double offsetMaxTemp = Math.Max(0d, temp - 400d);
-            return Math.Max(10d, Math.Min(400d, offsetMaxTemp * (is_engine ? 0.025 : 0.15)));
+            double offsetMaxTemp = Math.Max(0d, temp - ReentryPhysics.minTempForCalcOperationalTemp);
+            return Math.Max(ReentryPhysics.minOperationalTempOffset, Math.Min(ReentryPhysics.minTempForCalcOperationalTemp, 
+                offsetMaxTemp * (is_engine ? 0.025 : HighLogic.CurrentGame.Parameters.CustomParams<DeadlyReentrySettings>().PartOperationalTempThreshold)));
         }
 
         public override void OnSave(ConfigNode node)
@@ -350,37 +293,7 @@ namespace DeadlyReentry
             
             CheckForFire();
             CheckGeeForces();
-            if (is_debugging && vessel.mach > 1.0)
-            {
-                double thermalConvectionFlux = double.IsNaN(part.thermalConvectionFlux) ? 0d : part.thermalConvectionFlux;
-                double thermalRadiationFlux = double.IsNaN(part.thermalRadiationFlux) ? 0d : part.thermalRadiationFlux;
-                double totalThermalFlux = thermalConvectionFlux + thermalRadiationFlux;
-                if (totalThermalFlux > 0)
-                {
-                    recordedHeatLoad += totalThermalFlux;
-                    maximumRecordedHeat = Math.Max(maximumRecordedHeat, totalThermalFlux);
-                }
-
-                heatFluxPerArea = totalThermalFlux / part.skinExposedArea;
-                if (Double.IsNaN(heatFluxPerArea))
-                    heatFluxPerArea = 0;
-                
-                displayExposedAreas = part.skinExposedArea.ToString("F4");
-
-                displayRecordedHeatLoad = FormatFlux(recordedHeatLoad, true) + "J";
-                displayMaximumRecordedHeat = FormatFlux(maximumRecordedHeat) + "W";
-                //displayMaximumRecordedHeat = part.skinExposedArea.ToString("F2") + " / " + part.radiativeArea.ToString("F2") + "  m2";
-
-                double aeroThermalFlux = 0;
-
-                if (flightIntegrator != null)
-                {
-                    aeroThermalFlux = (Math.Pow(this.flightIntegrator.backgroundRadiationTempExposed, 4) * PhysicsGlobals.StefanBoltzmanConstant * PhysicsGlobals.RadiationFactor);
-                }
-                //displayHeatFluxPerArea = FormatFlux(heatFluxPerArea/10000) + "W/cm2";
-                if (heatFluxPerArea > 0)
-                    displayHeatFluxPerArea = (heatFluxPerArea).ToString("F4") + "(" + (this.part.vessel.convectiveCoefficient + aeroThermalFlux).ToString("F4") + ")";
-            }
+            
             if (TimeWarp.CurrentRate <= PhysicsGlobals.ThermalMaxIntegrationWarp)
                 lastTemperature = part.temperature;
         }
@@ -391,13 +304,8 @@ namespace DeadlyReentry
             {
                 is_debugging = PhysicsGlobals.ThermalDataDisplay;
 
-                //Fields["FIELD-TO-DISPLAY"].guiActive = PhysicsGlobals.ThermalDataDisplay;
-                Fields["displayRecordedHeatLoad"].guiActive = PhysicsGlobals.ThermalDataDisplay;
-                Fields["displayMaximumRecordedHeat"].guiActive = PhysicsGlobals.ThermalDataDisplay;
-                Fields["displayHeatFluxPerArea"].guiActive = PhysicsGlobals.ThermalDataDisplay;
-                Events["ResetRecordedHeat"].guiActive = PhysicsGlobals.ThermalDataDisplay;
-                Fields["displayDamage"].guiActive = PhysicsGlobals.ThermalDataDisplay;
-                Fields["displayExposedAreas"].guiActive = PhysicsGlobals.ThermalDataDisplay;
+                Fields[nameof(skinMaxOperationalTemp)].guiActive = PhysicsGlobals.ThermalDataDisplay;
+                Fields[nameof(maxOperationalTemp)].guiActive = PhysicsGlobals.ThermalDataDisplay;
 
                 if (myWindow != null)
                 {
@@ -430,10 +338,10 @@ namespace DeadlyReentry
                 //double gTolerance;
                 if (gTolerance < 0)
                 {
-                    gTolerance = (float)part.gTolerance / 6.0f * ReentryPhysics.gToleranceMult * 0.85f * UnityEngine.Random.Range(0.95f, 1.05f);
+                    gTolerance = (float)part.gTolerance * HighLogic.CurrentGame.Parameters.CustomParams<DeadlyReentrySettings>().PartGToleranceThreshold * UnityEngine.Random.Range(0.95f, 1.05f);
                 }
                 if (gTolerance >= 0 && displayGForce > gTolerance)
-                { // G tolerance is based roughly on crashTolerance
+                {
                     AddDamage(TimeWarp.fixedDeltaTime * (float)(displayGForce / gTolerance - 1), Vector3.zero);
                     if (!vessel.isEVA)
                     { // kerbal bones shouldn't sound like metal when they break.
@@ -466,9 +374,11 @@ namespace DeadlyReentry
                     List<ProtoCrewMember> crew = part.protoModuleCrew; //vessel.GetVesselCrew();
                     if (gExperienced > ReentryPhysics.crewGWarn && crew.Count > 0)
                     {
-                        if (DeadlyReentryScenario.displayCrewGForceWarning && gExperienced < ReentryPhysics.crewGLimit)
-                            ScreenMessages.PostScreenMessage(ReentryPhysics.crewGWarningMsg);
-                        else
+                        if (HighLogic.CurrentGame.Parameters.CustomParams<DeadlyReentrySettings>().DisplayCrewGForceWarning)
+                        {
+                            ScreenMessages.PostScreenMessage(crewGWarningMsg);
+                        }
+                        if (gExperienced > ReentryPhysics.crewGLimit && HighLogic.CurrentGame.Parameters.CustomParams<DeadlyReentrySettings>().CrewDieFromG)
                         {
                             // borrowed from TAC Life Support
                             if (UnityEngine.Random.Range(0f, 1f) < crewGKillChance)
@@ -479,12 +389,11 @@ namespace DeadlyReentry
                                     CameraManager.Instance.SetCameraFlight();
                                 }
                                 ProtoCrewMember member = crew[crewMemberIndex];
-                                
+
                                 ScreenMessages.PostScreenMessage(vessel.vesselName + ": Crewmember " + member.name + " died of G-force damage!", 30.0f, ScreenMessageStyle.UPPER_CENTER);
-                                FlightLogger.fetch.LogEvent("[" + FormatTime(vessel.missionTime) + "] "
-                                                          + member.name + " died of G-force damage.");
+                                FlightLogger.fetch.LogEvent("[" + KSPUtil.PrintTimeStamp(vessel.missionTime, false, false) + "] " + member.name + " died of G-force damage.");
                                 Debug.Log("*DRE* [" + Time.time + "]: " + vessel.vesselName + " - " + member.name + " died of G-force damage.");
-                                
+
                                 part.RemoveCrewmember(member);
                                 member.Die();
                                 if (vessel.isEVA)
@@ -698,7 +607,6 @@ namespace DeadlyReentry
                 ProcessDamage();
                 SetDamageLabel();
             }
-            flightIntegrator = vessel.gameObject.GetComponent<FlightIntegrator>();
         }
 
         static void print(string msg)
