@@ -18,6 +18,9 @@ To change DRE settings, click the DRE menu button (looks like a capsule reenteri
 DRE menu icon created by lajoswinkler
 ==========
 Changelog:
+v8.1.1
+* Fix flipped operational temp (resulted in operational temps being far too low).
+
 v8.1.0
 * Changed to using Game Difficulty Settings for tunable Deadly Reentry parameters.
 * Use correct FlightLogger interfaces for over-G and over-Temp explosions; also fix an issue where the flight results dialog was not triggered when DRE destroyed the root part.
