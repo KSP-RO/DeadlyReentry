@@ -261,8 +261,9 @@ namespace DeadlyReentry
         protected double OperationalTempOffset(double temp)
         {
             double offsetMaxTemp = Math.Max(0d, temp - ReentryPhysics.minTempForCalcOperationalTemp);
-            return Math.Max(ReentryPhysics.minOperationalTempOffset, Math.Min(ReentryPhysics.minTempForCalcOperationalTemp, 
-                offsetMaxTemp * (is_engine ? 0.025 : HighLogic.CurrentGame.Parameters.CustomParams<DeadlyReentrySettings>().PartOperationalTempThreshold)));
+            return Math.Max(ReentryPhysics.minOperationalTempOffset, 
+                Math.Min(ReentryPhysics.minTempForCalcOperationalTemp, 
+                    offsetMaxTemp * (is_engine ? 0.025d : 1d - HighLogic.CurrentGame.Parameters.CustomParams<DeadlyReentrySettings>().PartOperationalTempThreshold)));
         }
 
         public override void OnSave(ConfigNode node)
