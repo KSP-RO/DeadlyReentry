@@ -30,7 +30,7 @@ namespace DeadlyReentry
                     {
                         Debug.Log("Using ridiculousMaxTemp = " + maxTemp.ToString() + " / maxTempScale =" + scale.ToString());
                         
-                        if ((object)PartLoader.LoadedPartsList != null)
+                        if (PartLoader.LoadedPartsList != null)
                         {
                             //StringBuilder fixMaxTempLogs = new StringBuilder();
                             //foreach (AvailablePart part in PartLoader.LoadedPartsList)
@@ -41,7 +41,7 @@ namespace DeadlyReentry
                                 AvailablePart part = PartLoader.LoadedPartsList[i];
                                 try
                                 {
-                                    if ((object)part.partPrefab != null && !part.partPrefab.FindModuleImplementing<ModuleAblator>())
+                                    if (part.partPrefab != null && !part.partPrefab.FindModuleImplementing<ModuleAblator>())
                                     {
                                         ModuleAeroReentry _ModuleAeroReentry = part.partPrefab.FindModuleImplementing<ModuleAeroReentry>();
                                         if (_ModuleAeroReentry != null)
@@ -94,9 +94,10 @@ namespace DeadlyReentry
                                 {
                                    Debug.Log("Error processing part maxTemp " + part.name + "\n" + e.Message);
                                 }
+                                bool isKerbal = false;
                                 try
                                 {
-                                    if ((object)part.partPrefab != null && (object)part.partPrefab.Modules != null && part.name != "flag")
+                                    if (part.partPrefab != null && part.partPrefab.Modules != null)
                                     {
                                         bool add = true;
                                         for (int k = 0; k < part.partPrefab.Modules.Count; k++)
@@ -107,12 +108,17 @@ namespace DeadlyReentry
                                                 add = false;
                                                 break;
                                             }
+                                            if (part.partPrefab.Modules[k] is KerbalEVA)
+                                            {
+                                                isKerbal = true;
+                                            }
                                         }
                                         if (add)
                                         {
                                             if (bDebugLog)
-                                               Debug.Log("Adding ModuleAeroReentry to part " + part.name);
-											part.partPrefab.AddModule("ModuleAeroReentry", true).OnStart(PartModule.StartState.None);
+                                                Debug.Log("Adding ModuleAeroReentry to part " + part.name);
+
+                                            part.partPrefab.AddModule(isKerbal ? "ModuleKerbalAeroReentry" : "ModuleAeroReentry", true);
                                         }
                                     }
                                     else
@@ -120,7 +126,7 @@ namespace DeadlyReentry
                                 }
                                 catch (Exception e)
                                 {
-                                   Debug.Log("Error adding ModuleAeroReentry to " + part.name + "\n" +e.Message);
+                                   Debug.Log("Exception adding " + (isKerbal ? "ModuleKerbalAeroReentry" : "ModuleAeroReentry") + " to " + part.name + "\n" + e);
                                 }
                             }
                             //if (bDebugLog)
