@@ -18,6 +18,9 @@ To change DRE settings, click the DRE menu button (looks like a capsule reenteri
 DRE menu icon created by lajoswinkler
 ==========
 Changelog:
+v8.1.2
+* Fix adding DRE modules to parts on startup
+
 v8.1.1
 * Fix flipped operational temp (resulted in operational temps being far too low).
 
