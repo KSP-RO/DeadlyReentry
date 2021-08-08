@@ -34,7 +34,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Checkers.cs" />
     <Compile Include="DeadlyReentrySettings.cs" />
     <Compile Include="ReentryPhysics.cs" />
     <Compile Include="FixMaxTemp.cs" />
